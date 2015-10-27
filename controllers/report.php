@@ -6,7 +6,9 @@ class reportController extends Controller {
 		$this->Submission_file = $this->config['modelsPath']."submissions.php";
 		$this->Attempt_file = $this->config['modelsPath']."printAttempt.php";
 		require_once $this->Submission_file;
+		require_once $this->Attempt_file;
 		$this->Submission =new Submission($this->config);
+		$this->Attempt = new printAttempt($this->config);
 		
 		//if a date range has been submitted
 		$output = "";
@@ -65,7 +67,9 @@ class reportController extends Controller {
 				while ($job = $stmt->fetch_assoc()) {
 					$jobs[] = $job;
 				}
+				//$jobs holds submissions
 				$this->debugInfo['report_list'] = $jobs;
+				$this->debugInfo['Attempts'] = array();
 				
 				$NumberOfJobs = count($jobs);
 				$GramsByColor = array();
@@ -76,6 +80,10 @@ class reportController extends Controller {
 				$TotalPrinted = 0;
 				$TotalPickedUp = 0;
 				foreach($jobs as $thisJob) {
+					$Attempts = $this->Attempt->fetch_for_submission($thisJob['ID']);
+					$JobID = $thisJob['ID'];
+					$this->debugInfo['Attempts'][$JobID] = $Attempts;
+					
 					$color = $thisJob['Color'];
 					$grams = $thisJob['Grams'];
 					$hours = $thisJob['actual_hours'] + ($thisJob['actual_minutes'] / 60);
@@ -106,6 +114,28 @@ class reportController extends Controller {
 						$TotalPickedUp++;
 					}
 					$TotalHours += $hours;
+					foreach ($Attempts as $jobAttempts) {
+						if (count($jobAttempts) > 0) {
+							foreach ($jobAttempts as $thisAttempt) {
+								if (!$thisAttempt['successful']) {
+									$color = $thisAttempt['color'];
+									$grams = $thisAttempt['Grams'];
+									$hours = $thisAttempt['Hours'] + ($thisAttempt['Minutes'] / 60);
+									if(array_key_exists($color,$GramsByColor)) {
+										$GramsByColor[$color] += $grams;
+									} else {
+										$GramsByColor[$color] = $grams;
+									}
+									if (array_key_exists($color,$JobsByColor)) {
+										$JobsByColor[$color]++;
+									} else {
+										$JobsByColor[$color] = 1;
+									}
+								}
+							}
+							
+						}
+					}
 					
 				}
 				$TotalGrams = 0;
