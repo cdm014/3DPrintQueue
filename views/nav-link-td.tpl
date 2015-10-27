@@ -1,0 +1,1 @@
+<td><a href="http://staff.rpl.org/3dprintqueue/index.php?action={action}">{action_text}</a></td>
