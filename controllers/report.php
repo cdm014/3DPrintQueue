@@ -70,6 +70,7 @@ class reportController extends Controller {
 				//$jobs holds submissions
 				$this->debugInfo['report_list'] = $jobs;
 				$this->debugInfo['Attempts'] = array();
+				$this->debugInfo['AttemptMsgs'] = array();
 				
 				$NumberOfJobs = count($jobs);
 				$GramsByColor = array();
@@ -82,7 +83,12 @@ class reportController extends Controller {
 				foreach($jobs as $thisJob) {
 					$Attempts = $this->Attempt->fetch_for_submission($thisJob['ID']);
 					$JobID = $thisJob['ID'];
-					$this->debugInfo['Attempts'][$JobID] = $Attempts;
+					if(count($Attempts) >0) {
+						$this->debugInfo['Attempts'][$JobID] = $Attempts;
+						foreach ($Attempts as $anAttempt) {
+							 $anAttempt['id'];
+						}
+					}
 					
 					$color = $thisJob['Color'];
 					$grams = $thisJob['Grams'];
@@ -113,29 +119,43 @@ class reportController extends Controller {
 						$PickedUpByColor[$color]++;
 						$TotalPickedUp++;
 					}
-					$TotalHours += $hours;
-					foreach ($Attempts as $jobAttempts) {
-						if (count($jobAttempts) > 0) {
-							foreach ($jobAttempts as $thisAttempt) {
-								if (!$thisAttempt['successful']) {
-									$color = $thisAttempt['color'];
-									$grams = $thisAttempt['Grams'];
-									$hours = $thisAttempt['Hours'] + ($thisAttempt['Minutes'] / 60);
-									if(array_key_exists($color,$GramsByColor)) {
-										$GramsByColor[$color] += $grams;
-									} else {
-										$GramsByColor[$color] = $grams;
-									}
-									if (array_key_exists($color,$JobsByColor)) {
-										$JobsByColor[$color]++;
-									} else {
-										$JobsByColor[$color] = 1;
-									}
+					if(count($Attempts) > 0) {
+						$JobDebug = array();
+						
+						
+						$JobDebug[] = "Job Test Debug";
+						foreach ($Attempts as $anAttempt) {
+							$attemptId = $anAttempt['id'];
+							$attemptDebug = array();
+													
+							if ($anAttempt['successful']) {
+								//we don't want to add this data yet
+								$attemptDebug[] = "attempt successful not capturing";					
+							} else {
+								//we want to capture this data
+								$attemptDebug[] = "Not successful need to capture";		
+								$attColor = $anAttempt['color'];
+								$attemptDebug['color'] = $attColor;
+								$attGrams = $anAttempt['Grams'];
+								$attemptDebug['Grams'] = $attGrams;
+								$attHours = $anAttempt['Hours'] + ($anAttempt['Minutes'] / 60);
+								$attemptDebug['Hours'] = $attHours;
+								$attemptDebug['before color'] = $GramsByColor[$attColor];
+								if(array_key_exists($attColor,$GramsByColor)) {
+									$GramsByColor[$attColor] += $attGrams;
+								} else {
+									$GramsByColor[$attColor] = $attGrams;
 								}
+								$attemptDebug['after color'] = $GramsByColor[$attColor];
+								$hours += $attHours;
 							}
-							
+							$JobDebug[$attemptId] = $attemptDebug;
 						}
+						$this->debugInfo['AttemptMsgs'][$JobID] = $JobDebug;
 					}
+					
+					$TotalHours += $hours;
+					
 					
 				}
 				$TotalGrams = 0;
