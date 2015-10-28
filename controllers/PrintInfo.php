@@ -122,13 +122,58 @@ class PrintInfoController extends Controller {
 			
 			//new way
 			//check if successful
+			if(!array_key_exists("printed",$pidata)) {
+				$pidata['printed'] = 0;
+			}
 			if ($pidata['printed']) {
 			//did we check printed
 			//then update the submission as normal
+				if($this->Submission->update($id,$pidata)){
+				//if the update is successful
+					//load the home controller
+					$action="home";
+					$controllerclass = $action."Controller";
+					$controllerfile = $this->config['controllerPath'].$action.".php";
+					if (is_file($controllerfile)) {
+						require_once $controllerfile;
+						$controller = new $controllerclass($this->debugInfo, $this->config);
+
+						$output .= $controller->process();	
+					} else {
+						$debugInfo['controller_not_exist'] = "The Controller File Doesn't Exist";
+						$output .= "<p>Could not load home controller</p>";
+						$debug = true;
+					}
+					return $output;
+				}else {
+					$data['content'] .= "<p>Update Failed</p>";
+					$data['content'] .= "<pre>".print_r($this->Submission->stmt_error(),true)."</pre>";
+				}
+			
 			} else {
 			//if we didn't check printed
-			//then record the information as an attempt
-			
+				//then record the information as an attempt
+				if($this->printAttempt->createFromArray($pidata)) {
+				//if we were successful in creating from an array
+					$action="home";
+					$controllerclass = $action."Controller";
+					$controllerfile = $this->config['controllerPath'].$action.".php";
+					if (is_file($controllerfile)) {
+						require_once $controllerfile;
+						$controller = new $controllerclass($this->debugInfo, $this->config);
+
+						$output .= $controller->process();	
+					} else {
+						$debugInfo['controller_not_exist'] = "The Controller File Doesn't Exist";
+						$output .= "<p>Could not load home controller</p>";
+						$debug = true;
+					}
+					return $output;
+				}else {
+					$data['content'] .= "<p>Unable to create print attempt</p>";
+					$data['content'] .= "<pre>".print_r($this->printAttempt->stmt_error(),true)."</pre>";
+				}
+					
 			}
 		}
 		$baseTemplate->setData($data);
