@@ -24,6 +24,7 @@ class PrintInfoController extends Controller {
 		$data['header'] = $headerTemplate->process();
 		$Update = get("UpdatePrintInfo");
 		if(!$Update) {
+		//if we haven't submitted updated information
 			$id = get('id');
 			$this->debugInfo['id'] = $id;
 			$this->Submission->set_id($id);
@@ -81,12 +82,17 @@ class PrintInfoController extends Controller {
 			$baseTemplate->setData($data);
 			return $baseTemplate->process();
 		} else {
+		//if we do have updated data
 			$output = "";
 			$data['content'] = "";
 			$id = get('id');
 			$pidata = array();
 			$pidata['ID'] = get('id');
+			//grab data from post
 			$pidata = array_merge($_POST,$pidata);
+			
+			/*
+			//old way just use the grabbed data to update
 			if($this->Submission->update($id,$pidata)){
 				$action="home";
 				$controllerclass = $action."Controller";
@@ -95,8 +101,7 @@ class PrintInfoController extends Controller {
 				//debug 
 				$data['content'] .= "<p>Post</p><pre>".print_r($_POST,true)."</pre>";
 				$data['content'] .= "<p>Data</p><pre>".print_r($pidata,true)."</pre>";
-				//*/
-				//*
+				
 				if (is_file($controllerfile)) {
 					require_once $controllerfile;
 					$controller = new $controllerclass($this->debugInfo, $this->config);
@@ -108,10 +113,22 @@ class PrintInfoController extends Controller {
 					$debug = true;
 				}
 				return $output;
-				//*/
+				
 			} else {
 				$data['content'] .= "<p>Update Failed</p>";
 				$data['content'] .= "<pre>".print_r($this->Submission->stmt_error(),true)."</pre>";
+			}
+			//*/
+			
+			//new way
+			//check if successful
+			if ($pidata['printed']) {
+			//did we check printed
+			//then update the submission as normal
+			} else {
+			//if we didn't check printed
+			//then record the information as an attempt
+			
 			}
 		}
 		$baseTemplate->setData($data);
