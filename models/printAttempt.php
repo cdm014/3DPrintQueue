@@ -38,6 +38,24 @@ class printAttempt extends Model {
 		//*/
 	}
 	
+	function createFromArray($input) {
+		$this->sql = "insert into `".$this->tableName."` (`3dprinting_id`,`Machine`,`Started`,`Grams`,`color`) values  ( :3dprinting_id , :Machine, :Started , :Grams , :color )";
+		$this->stmt = $this->dbh->prepare($this->sql);
+		$this->stmt->bindParam(":3dprinting_id",$input['ID'],PDO::PARAM_INT);
+		$this->stmt->bindParam(":Machine","Unknown",PDO::PARAM_STR);
+		$this->stmt->bindParam(":Started",date("Y-m-d H:i:s"),PDO::PARAM_STR);
+		$this->stmt->bindParam(":Grams",$input['Grams'],PDO::PARAM_INT);
+		$this->stmt->bindParam(":color",$input['color'],PDO::PARAM_STR);
+		$this->params = array();
+		$this->params[":3dPrinting_id"] = $input['ID'];
+		$this->params[":Machine"] = "Unknown";
+		$this->params[":Started"] = date("Y-m-d H:i:s");
+		$this->params[":Grams"] = $input['Grams'];
+		$this->params[":color"] = $input['color'];
+		return $this->stmt->execute();
+		
+	}
+	
 	function stmt_error () {
 		$error = array();
 		$error['code'] = $this->stmt->errorCode();
