@@ -61,7 +61,7 @@ class reportController extends Controller {
 				//display report
 				$data['content'].="<p>Options ARE selected</p>";
 				//need to fix lastdate
-				$sql = "Select * from 3dprinting where submitted >= '$startDate' and submitted <= '$lastDate'";
+				$sql = "Select * from 3dprinting where submitted >= '$startDate' and submitted <= '$lastDate 23:59:59'";
 				$stmt = $this->Submission->query($sql);
 				$jobs =  array();
 				while ($job = $stmt->fetch_assoc()) {
