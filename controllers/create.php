@@ -82,9 +82,10 @@
 					
 				}
 				$modelData['final_location'] = "$uploadDir\\".$fileName;
-				$modelData['test_location'] = "http://www.rpl.org/3dmodels/".$fileName;
+				$modelData['fileLocation'] = "$uploadDir\\".$fileName;
+				$modelData['final_location'] = "http://www.rpl.org/3dmodels/".$fileName;
 				$modelData['submitted'] = date("Y-m-d H:i:s");
-				if((!$nofile && move_uploaded_file($_FILES['model']['tmp_name'],$modelData['final_location']))||$nofile) {
+				if((!$nofile && move_uploaded_file($_FILES['model']['tmp_name'],$modelData['fileLocation']))||$nofile) {
 					$modelData['Grams'] = 0;
 					$modelData['actual_hours'] = 0;
 					$modelData['actual_minutes'] = 0;
