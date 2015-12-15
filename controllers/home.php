@@ -48,7 +48,7 @@ class homeController extends Controller {
 		$ListWrapperTplFile = $this->config['viewsPath']."list-wrapper.tpl";
 		$mydb[] = "List Wrapper File: $ListWrapperTplFile";
 		
-		$res = $this->Submission->query("select * from 3dprinting where printed is null order by submitted asc");
+		$res = $this->Submission->query("select * from 3dprinting where printed is null and (abandoned is null or abandoned != 1)  order by submitted asc");
 		$o = "";
 		$data = array();
 		$data['table_column_headers'] = $this->generate_table_headings();
@@ -63,7 +63,7 @@ class homeController extends Controller {
 		while ($rowdata = $res->fetch_assoc()){
 			$TemplateDebug = array();
 			$resetTemplate->setData(array("action"=>"reset","id" => "{ID}","action_text" => "Reset {ID}"));
-			$deleteTemplate->setData(array("action"=>"delete","id"=>"{ID}","action_text" => "Delete This Job"));
+			$deleteTemplate->setData(array("action"=>"abandon","id"=>"{ID}","action_text" => "Abandon This Job"));
 			$this->debugInfo['reset-test'][] = $rowdata['ID'];
 			$rowdata['submitted'] .= $resetTemplate->process();
 			$rowdata['submitted'] .= $deleteTemplate->process();

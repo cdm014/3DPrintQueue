@@ -76,14 +76,22 @@ class reportController extends Controller {
 				$JobsByColor = array();
 				$PrintedByColor = array();
 				$PickedUpByColor = array();
+				$Abandoned = array();
+				$Abandoned['GramsByColor'] = array();
+				$Abandoned['JobsByColor'] = array();
+				$Abandoned['TotalHours'] = 0;
+				$Abandoned['TotalJobs'] = 0;
+				
 				$TotalHours = 0;
 				$TotalPrinted = 0;
 				$TotalPickedUp = 0;
 				$this->debugInfo['AttemptsCount'] = array();
 				foreach($jobs as $thisJob) {
+					
 					$Attempts = array();
 					$Attempts = $this->Attempt->fetch_for_submission($thisJob['ID']);
 					$JobID = $thisJob['ID'];
+					
 					//$this->debugInfo['Attempts'][$JobID] = $Attempts;
 					$this->debugInfo['AttemptsCount'][$JobID] = array();
 					$this->debugInfo['AttemptsCount'][$JobID]['count']	= count($Attempts);
@@ -97,6 +105,7 @@ class reportController extends Controller {
 					} else {
 						$GramsByColor[$color] = $grams;
 					}
+					
 					if (array_key_exists($color,$JobsByColor)) {
 						$JobsByColor[$color]++;
 					} else {
@@ -118,7 +127,22 @@ class reportController extends Controller {
 						$TotalPickedUp++;
 					}
 					$TotalHours += $hours;
-					
+					if($thisJob['abandoned']) {
+						$this->debugInfo['Abandoned'][$JobID] = 'Abandoned';
+						if(array_key_exists($color,$Abandoned['GramsByColor'])) {
+							$Abandoned['GramsByColor'][$color] += $grams;
+						} else {
+							$Abandoned['GramsByColor'][$color] = $grams;
+						}
+						
+						if (array_key_exists($color,$Abandoned['JobsByColor'])) {
+							$Abandoned['JobsByColor'][$color]++;
+						} else {
+							$Abandoned['JobsByColor'][$color] = 1;
+						}
+						$Abandoned['TotalHours'] += $hours;
+						$Abandoned['TotalJobs']++;
+					}
 					if(count($Attempts) > 0) {
 						$this->debugInfo['AttemptsCount'][$JobID]['msg'] = 'trying';
 						$this->debugInfo['AttemptsCount'][$JobID]['Attempts'] = $Attempts;
@@ -140,6 +164,21 @@ class reportController extends Controller {
 									} else {
 										$JobsByColor[$color] = 1;
 									}
+									$TotalHours += $hours;
+									
+									if($thisJob['abandoned']) {
+										if(array_key_exists($color,$Abandoned['GramsByColor'])) {
+											$Abandoned['GramsByColor'][$color] += $grams;
+										} else {
+											$Abandoned['GramsByColor'][$color] = $grams;
+										}
+										if (array_key_exists($color,$Abandoned['JobsByColor'])) {
+											$Abandoned['JobsByColor'][$color]++;
+										} else {
+											$Abandoned['JobsByColor'][$color] = 1;
+										}
+										$Abandoned['TotalHours'] += $hours;
+									}
 								}
 								
 								
@@ -154,11 +193,21 @@ class reportController extends Controller {
 				foreach($GramsByColor as $Grams) {
 					$TotalGrams += $Grams;
 				}
+				
+				$Abandoned['TotalGrams'] = 0;
+				
+				foreach($Abandoned['GramsByColor'] as $Grams) {
+					$Abandoned['TotalGrams'] += $Grams;
+				}
 				$reportData = array();
 				$reportData['Number of Jobs'] = $NumberOfJobs;
+				$reportData['Abandoned Jobs'] = $Abandoned['TotalJobs'];
 				$reportData['Total Grams'] = $TotalGrams; 
+				$reportData['Abandoned Total Grams'] = $Abandoned['TotalGrams'];
 				$reportData['Total Hours'] = $TotalHours;
+				$reportData['Abandoned Hours'] = $Abandoned['TotalHours'];
 				$reportData['Grams By Color']	= $GramsByColor;
+				
 				$reportData['Jobs By Color'] = $JobsByColor;
 				$reportData['Printed By Color'] = $PrintedByColor;
 				$reportData['Picked Up By Color'] = $PickedUpByColor;
@@ -191,6 +240,18 @@ class reportController extends Controller {
 					$temparray = array("key" => $color." grams", "value" => $grams);
 					$ReportRowTemplate->setData($temparray);
 					$ReportWrapperData['reportData'] .= $ReportRowTemplate->process();
+					$ReportRowTemplate->reset();
+					$abandonedGrams = 0;
+					if(!array_key_exists($color,$Abandoned['GramsByColor'])) {
+						$abandonedGrams = 0;
+					} else {
+						$abandonedGrams = $Abandoned['GramsByColor'][$color];
+					}
+						
+					$temparray = array("key" => "abandoned ".$color." grams", "value" => $abandonedGrams);
+					$ReportRowTemplate->setData($temparray);
+					$ReportWrapperData['reportData'] .= $ReportRowTemplate->process();
+					
 				}
 				
 				

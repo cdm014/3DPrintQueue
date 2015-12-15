@@ -223,6 +223,16 @@ class Submission extends Model {
 		}
 	}
 	
+	function set_abandoned($id) {
+		$this->config['SQL'] = "Update ".$this->tableName." set abandoned = 1 where id = $id";
+		$rowsUpdated = $this->dbh->exec($this->config['SQL']);
+		if ($rowsUpdated == 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	function picked_up($id) {
 		$this->config['SQL'] = "Update ".$this->tableName." set picked_up = 1 where id = $id";
 		$rowsUpdated = $this->dbh->exec($this->config['SQL']);

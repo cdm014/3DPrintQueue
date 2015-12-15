@@ -32,6 +32,16 @@
 						
 						if($this->Submission->retrieveByFile($entry)) {
 							$data['content'] .= "in database";
+							if($record['abandoned'] == 1) {
+								//job abandoned
+								$data['content'] .= "Abandoned ";
+								if (unlink($fileBase."\\".$engry)) {
+									$data['content'] .= "- File Removed";
+								} else {
+									$data['content'] .= "- ERROR REMOVING FILE";
+								}
+							}
+								
 						} else {
 							$data['content'] .= "NOT IN DATABASE";
 							if (unlink($fileBase."\\".$entry)) {
