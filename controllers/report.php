@@ -68,7 +68,7 @@ class reportController extends Controller {
 					$jobs[] = $job;
 				}
 				//$jobs holds submissions
-				$this->debugInfo['report_list'] = $jobs;
+				//$this->debugInfo['report_list'] = $jobs;
 				$this->debugInfo['Attempts'] = array();
 				
 				$NumberOfJobs = count($jobs);
@@ -79,10 +79,14 @@ class reportController extends Controller {
 				$TotalHours = 0;
 				$TotalPrinted = 0;
 				$TotalPickedUp = 0;
+				$this->debugInfo['AttemptsCount'] = array();
 				foreach($jobs as $thisJob) {
+					$Attempts = array();
 					$Attempts = $this->Attempt->fetch_for_submission($thisJob['ID']);
 					$JobID = $thisJob['ID'];
-					$this->debugInfo['Attempts'][$JobID] = $Attempts;
+					//$this->debugInfo['Attempts'][$JobID] = $Attempts;
+					$this->debugInfo['AttemptsCount'][$JobID] = array();
+					$this->debugInfo['AttemptsCount'][$JobID]['count']	= count($Attempts);
 					
 					$color = $thisJob['Color'];
 					$grams = $thisJob['Grams'];
@@ -114,9 +118,14 @@ class reportController extends Controller {
 						$TotalPickedUp++;
 					}
 					$TotalHours += $hours;
-					foreach ($Attempts as $jobAttempts) {
-						if (count($jobAttempts) > 0) {
-							foreach ($jobAttempts as $thisAttempt) {
+					
+					if(count($Attempts) > 0) {
+						$this->debugInfo['AttemptsCount'][$JobID]['msg'] = 'trying';
+						$this->debugInfo['AttemptsCount'][$JobID]['Attempts'] = $Attempts;
+						
+						foreach ($Attempts as $thisAttempt) {
+							//$this->debugInfo['AttemptsCount'][$JobID]['count2'] = count($jobAttempts);
+							if (count($thisAttempt) > 0) {
 								if (!$thisAttempt['successful']) {
 									$color = $thisAttempt['color'];
 									$grams = $thisAttempt['Grams'];
@@ -132,9 +141,12 @@ class reportController extends Controller {
 										$JobsByColor[$color] = 1;
 									}
 								}
+								
+								
 							}
-							
 						}
+					} else {
+						$this->debugInfo['AttemptsCount'][$JobID]['msg'] = 'skipping';
 					}
 					
 				}

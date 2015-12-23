@@ -114,6 +114,7 @@ class printAttemptsController extends Controller {
 			$Grams = get('Grams');
 			$color = get('color');
 			$successful = get('successful');
+			$successful = $successful ? $successful : 0;
 			$Hours = $Hours ? $Hours : 0;
 			$Minutes = $Minutes ? $Minutes : 0;
 			$updated = $this->printAttempt->update($AttemptID, $printing_id, $Machine, $Started, $Hours, $Minutes, $Grams, $color, $successful);
