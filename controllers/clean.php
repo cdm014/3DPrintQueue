@@ -58,7 +58,7 @@
 							$data['content'] .= "in database";
 							if($record['abandoned'] == 1) {
 								//job abandoned
-								$data['content'] .= "Abandoned ";
+								$data['content'] .= " Abandoned ";
 								if (unlink($fileBase."\\".$entry)) {
 									$data['content'] .= "- File Removed";
 								} else {
